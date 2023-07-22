@@ -156,17 +156,20 @@ AllowedIPs = {self.add_byte_to_adress(username)}/32\n\n''')
     def create_peer_config(self, peer_private_key: str) -> str:
         """creates config for client and returns it as string
         """
-        return f'''[Interface]
-PrivateKey = {peer_private_key}
+        return f'''
+[Interface]
 Address = {self.last_peer_adress}
-DNS = 8.8.8.8
-
+DNS = 1.1.1.1,1.0.0.1,2606:4700:4700::1111,2606:4700:4700::1001
+ListenPort = ??
+MTU = 1280
+PrivateKey = {peer_private_key}
 [Peer]
-PublicKey = {self.server_public_key}
-PresharedKey = {self.server_preshared_key}
-AllowedIPs = 0.0.0.0/0
+AllowedIPs = 0.0.0.0/0,::/0
 Endpoint = {self.server_ip}:{self.server_port}
-PersistentKeepalive = 20'''
+PersistentKeepalive = 25
+PresharedKey = {self.server_preshared_key}
+PublicKey = {self.server_public_key}
+'''
 
     def update_server_config(self, username: str, device: str) -> str:
         """adds new peer to config file and restarts wg-quick
