@@ -11,7 +11,7 @@ class wireguard_config():
         self.server_ip = getenv('WG_SERVER_IP')
         self.server_port = getenv('WG_SERVER_PORT')
         self.server_public_key = getenv('WG_SERVER_PUBLIC_KEY')
-        self.server_preshared_key = getenv('WG_SERVER_PRESHARED_KEY')
+        # self.server_preshared_key = getenv('WG_SERVER_PRESHARED_KEY')
 
         self.config = self.get_config()
         self.last_peer_adress = self.get_last_peer_adress()
@@ -33,6 +33,26 @@ class wireguard_config():
                     f'[+] private key "{private_key}" for user {username} saved to database')
 
             return private_key
+        except Exception as e:
+            logger.error(f'[-] {e}')
+
+    def generate_preshared_key(self, username: str, save: bool = True) -> str:
+        """Generate wireguard peer PRESHARED key
+
+        Returns:
+            str: peer preshared key
+        """
+        try:
+            preshared_key = subprocess.check_output(
+                "wg genpsk", shell=True).decode("utf-8").strip()
+            logger.success('[+] preshared key generated')
+
+            if save:
+                # TODO maybe better save private key to database?
+                logger.info(
+                    f'[+] preshared key "{preshared_key}" for user {username} saved to database')
+
+            return preshared_key
         except Exception as e:
             logger.error(f'[-] {e}')
 
@@ -60,10 +80,11 @@ class wireguard_config():
         except Exception as e:
             logger.error(f'[-] {e}')
 
-    def generate_key_pair(self, username: str) -> tuple:
+    def generate_keys(self, username: str) -> tuple:
         private_key = self.generate_private_key(username=username)
         public_key = self.generate_public_key(private_key, username=username)
-        return private_key, public_key
+        preshared_key = self.generate_preshared_key(username=username)
+        return private_key, public_key, preshared_key
 
     def restart_service(self) -> None:
         """restart wireguard service
@@ -120,13 +141,13 @@ class wireguard_config():
             f"[+] new peer adress is {'.'.join(adress)} for user {username}")
         return '.'.join(adress)
 
-    def add_new_peer(self, username: str, peer_public_key: str) -> None:
+    def add_new_peer(self, username: str, peer_public_key: str, peer_preshared_key: str) -> None:
         """adds new peer to config file"""
         try:
             with open(self.cfg_path, 'a') as cfg:
                 cfg.write(
                     f'''#{username}\n[Peer]\nPublicKey = {peer_public_key}
-PresharedKey = {self.server_preshared_key}
+PresharedKey = {peer_preshared_key}
 AllowedIPs = {self.add_byte_to_adress(username)}/32\n\n''')
                 logger.info(f'[+] new peer {username} added')
         except Exception as e:
@@ -153,7 +174,7 @@ AllowedIPs = {self.add_byte_to_adress(username)}/32\n\n''')
         except Exception as e:
             logger.error(f'[-] {e}')
 
-    def create_peer_config(self, peer_private_key: str) -> str:
+    def create_peer_config(self, peer_private_key: str, peer_preshared_key: str) -> str:
         """creates config for client and returns it as string
         """
         return f'''
@@ -167,7 +188,7 @@ PrivateKey = {peer_private_key}
 AllowedIPs = 0.0.0.0/0,::/0
 Endpoint = {self.server_ip}:{self.server_port}
 PersistentKeepalive = 25
-PresharedKey = {self.server_preshared_key}
+PresharedKey = {peer_preshared_key}
 PublicKey = {self.server_public_key}
 '''
 
@@ -181,13 +202,13 @@ PublicKey = {self.server_public_key}
         Returns:
             str: config for new peer
         """
-        user_priv_key, user_pub_key = self.generate_key_pair(username=username)
+        user_priv_key, user_pub_key, user_pres_key = self.generate_keys(username=username)
 
         self.add_new_peer(f'{username}_{device}', user_pub_key)
         # restart wg-quick
         self.restart_service()
 
-        return self.create_peer_config(user_priv_key)
+        return self.create_peer_config(user_priv_key, user_pres_key)
 
     def disconnect_peer(self, user_id: int):
         """disconnects peer by username
