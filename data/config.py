@@ -1,7 +1,25 @@
 import os
 from dotenv import load_dotenv
+import sys, getopt
 
-load_dotenv(override=True)
+
+argv = sys.argv[1:]
+
+if (argv):
+    try:
+        opts, args = getopt.getopt(argv, "d:")
+    except getopt.GetoptError:
+        print('test.py -d')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-d':
+            load_dotenv(".env.dev", override=True)
+        else:
+            print('Wrong option was provided')
+            sys.exit()
+else:
+    load_dotenv(".env", override=True)
+
 
 BOT_TOKEN = os.getenv('WG_BOT_TOKEN')
 PAYMENTS_TOKEN = os.getenv('PAYMENTS_TOKEN')

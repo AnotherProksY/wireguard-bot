@@ -219,9 +219,9 @@ async def cmd_support(message: types.Message):
         parse_mode='Markdown',
     )
 
-    # answer with username info @pheezz as markdown
+    # answer with username info @dmitnikm5 as markdown
     await message.answer(
-        'Если у тебя все еще остались вопросы, то ты можешь написать [мне](t.me/pheezz) лично',
+        'Если у тебя все еще остались вопросы, то ты можешь написать [мне](t.me/dmitnikm5) лично',
         parse_mode='Markdown')
 
 
