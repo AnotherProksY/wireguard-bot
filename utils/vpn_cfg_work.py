@@ -174,14 +174,14 @@ AllowedIPs = {self.add_byte_to_adress(username)}/32\n\n''')
         except Exception as e:
             logger.error(f'[-] {e}')
 
-    def create_peer_config(self, peer_private_key: str, peer_preshared_key: str) -> str:
+    def create_peer_config(self, peer_private_key: str, peer_preshared_key: str, listen_port: int) -> str:
         """creates config for client and returns it as string
         """
         return f'''
 [Interface]
 Address = {self.last_peer_adress}
 DNS = 1.1.1.1,1.0.0.1,2606:4700:4700::1111,2606:4700:4700::1001
-ListenPort = ??
+ListenPort = {listen_port}
 MTU = 1280
 PrivateKey = {peer_private_key}
 [Peer]
@@ -203,12 +203,13 @@ PublicKey = {self.server_public_key}
             str: config for new peer
         """
         user_priv_key, user_pub_key, user_pres_key = self.generate_keys(username=username)
+        user_listen_port = subprocess.run(['shuf', '--input-range=1024-65535', '--head-count=1'])
 
-        self.add_new_peer(f'{username}_{device}', user_pub_key)
+        self.add_new_peer(f'{username}_{device}', user_pub_key, user_pres_key)
         # restart wg-quick
         self.restart_service()
 
-        return self.create_peer_config(user_priv_key, user_pres_key)
+        return self.create_peer_config(user_priv_key, user_pres_key, user_listen_port)
 
     def disconnect_peer(self, user_id: int):
         """disconnects peer by username

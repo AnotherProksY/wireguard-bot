@@ -136,23 +136,23 @@ async def device_selected(call: types.CallbackQuery, state=FSMContext):
                                device=device,
                                config=user_config)
 
-    with open(f'data/temp/TURKEY_{call.from_user.username}_{device}.conf', 'w') as f:
+    with open(f'data/temp/{call.from_user.username}_{device}.conf', 'w') as f:
         f.write(user_config)
 
     # send config file
-    await call.message.answer_document(types.InputFile(f'data/temp/TURKEY_{call.from_user.username}_{device}.conf'),
+    await call.message.answer_document(types.InputFile(f'data/temp/{call.from_user.username}_{device}.conf'),
                                        reply_markup=await kb.configs_kb(call.from_user.id))
 
     if device == "PHONE":
         # send qr code (create qr code from config by qrencode)
-        os.system(f'qrencode -o data/temp/TURKEY_{call.from_user.username}.png -s 10 -l H -m 2 < data/temp/TURKEY_{call.from_user.username}_{device}.conf')
-        await call.message.answer_photo(types.InputFile(f'data/temp/TURKEY_{call.from_user.username}.png'),)
+        os.system(f'qrencode -o data/temp/{call.from_user.username}.png -s 10 -l H -m 2 < data/temp/{call.from_user.username}_{device}.conf')
+        await call.message.answer_photo(types.InputFile(f'data/temp/{call.from_user.username}.png'),)
 
     # delete temp files
     try:
-        remove(f'data/temp/TURKEY_{call.from_user.username}.conf')
+        remove(f'data/temp/{call.from_user.username}.conf')
         if device == "PHONE":
-            remove(f'data/temp/TURKEY_{call.from_user.username}.png')
+            remove(f'data/temp/{call.from_user.username}.png')
     except OSError as error:
         logger.error(
             f'Error while deleting temp files for user {call.from_user.username}; Error: {error}')
@@ -175,36 +175,36 @@ async def cmd_show_config(message: types.Message, state=FSMContext):
         config_name=f'{message.from_user.username}_{device}')
 
     if device == 'PC':
-        with open(f'data/temp/TURKEY_{message.from_user.username}_{device}.conf', 'w') as f:
+        with open(f'data/temp/{message.from_user.username}_{device}.conf', 'w') as f:
             f.write(config)
 
         # send config file
-        await message.answer_document(types.InputFile(f'data/temp/TURKEY_{message.from_user.username}_{device}.conf'),)
+        await message.answer_document(types.InputFile(f'data/temp/{message.from_user.username}_{device}.conf'),)
 
         # delete temp files
         try:
             remove(
-                f'data/temp/TURKEY_{message.from_user.username}_{device}.conf')
+                f'data/temp/{message.from_user.username}_{device}.conf')
         except OSError as error:
             logger.error(
                 f'Error while deleting temp files for user {message.from_user.username}; Error: {error}')
 
     elif device == 'PHONE':
-        with open(f'data/temp/TURKEY_{message.from_user.username}_{device}.conf', 'w') as f:
+        with open(f'data/temp/{message.from_user.username}_{device}.conf', 'w') as f:
             f.write(config)
 
         # send config file
-        await message.answer_document(types.InputFile(f'data/temp/TURKEY_{message.from_user.username}_{device}.conf'),)
+        await message.answer_document(types.InputFile(f'data/temp/{message.from_user.username}_{device}.conf'),)
 
         # send qr code (create qr code from config by qrencode)
-        os.system(f'qrencode -o data/temp/TURKEY_{message.from_user.username}.png -s 10 -l H -m 2 < data/temp/TURKEY_{message.from_user.username}_{device}.conf')
-        await message.answer_photo(types.InputFile(f'data/temp/TURKEY_{message.from_user.username}.png'),)
+        os.system(f'qrencode -o data/temp/{message.from_user.username}.png -s 10 -l H -m 2 < data/temp/{message.from_user.username}_{device}.conf')
+        await message.answer_photo(types.InputFile(f'data/temp/{message.from_user.username}.png'),)
 
         # delete temp files
         try:
             remove(
-                f'data/temp/TURKEY_{message.from_user.username}_{device}.conf')
-            remove(f'data/temp/TURKEY_{message.from_user.username}.png')
+                f'data/temp/{message.from_user.username}_{device}.conf')
+            remove(f'data/temp/{message.from_user.username}.png')
         except OSError as error:
             logger.error(
                 f'Error while deleting temp files for user {message.from_user.username}; Error: {error}')
