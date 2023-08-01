@@ -2,6 +2,7 @@ from loguru import logger
 from os import getenv
 import database
 import subprocess
+from random import randint
 
 
 class wireguard_config():
@@ -146,9 +147,9 @@ class wireguard_config():
         try:
             with open(self.cfg_path, 'a') as cfg:
                 cfg.write(
-                    f'''#{username}\n[Peer]\nPublicKey = {peer_public_key}
+                    f'''#{username} start\n[Peer]\nPublicKey = {peer_public_key}
 PresharedKey = {peer_preshared_key}
-AllowedIPs = {self.add_byte_to_adress(username)}/32\n\n''')
+AllowedIPs = {self.add_byte_to_adress(username)}/32\n#{username} end\n''')
                 logger.info(f'[+] new peer {username} added')
         except Exception as e:
             logger.error(f'[-] {e}')
@@ -174,11 +175,10 @@ AllowedIPs = {self.add_byte_to_adress(username)}/32\n\n''')
         except Exception as e:
             logger.error(f'[-] {e}')
 
-    def create_peer_config(self, peer_private_key: str, peer_preshared_key: str, listen_port: int) -> str:
+    def create_peer_config(self, peer_private_key: str, peer_preshared_key: str, listen_port: str) -> str:
         """creates config for client and returns it as string
         """
-        return f'''
-[Interface]
+        return f'''[Interface]
 Address = {self.last_peer_adress}
 DNS = 1.1.1.1,1.0.0.1,2606:4700:4700::1111,2606:4700:4700::1001
 ListenPort = {listen_port}
@@ -203,7 +203,7 @@ PublicKey = {self.server_public_key}
             str: config for new peer
         """
         user_priv_key, user_pub_key, user_pres_key = self.generate_keys(username=username)
-        user_listen_port = subprocess.run(['shuf', '--input-range=1024-65535', '--head-count=1'])
+        user_listen_port = str(randint(1024, 65535))
 
         self.add_new_peer(f'{username}_{device}', user_pub_key, user_pres_key)
         # restart wg-quick
