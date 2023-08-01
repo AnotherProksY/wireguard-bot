@@ -112,11 +112,11 @@ class wireguard_config():
                 if line.startswith('AllowedIPs'):
                     last_peer_adress = line
             # delete 'AllowedIPs = ' and '/32' from string
-            return last_peer_adress[13:-3]
+            return last_peer_adress[13:-3].split('/')[0]
         except Exception as e:
             logger.error(f'[-] {e}')
 
-    def add_byte_to_adress(self, username: str) -> str | None:
+    def add_byte_to_adress(self, username: str) -> list[str] | None:
         """adds 1 byte to adress
         """
         adress = self.last_peer_adress.split('.')
@@ -140,16 +140,17 @@ class wireguard_config():
 
         logger.info(
             f"[+] new peer adress is {'.'.join(adress)} for user {username}")
-        return '.'.join(adress)
+        return adress
 
     def add_new_peer(self, username: str, peer_public_key: str, peer_preshared_key: str) -> None:
         """adds new peer to config file"""
         try:
             with open(self.cfg_path, 'a') as cfg:
+                allowed_ip = self.add_byte_to_adress(username)
                 cfg.write(
                     f'''#{username} start\n[Peer]\nPublicKey = {peer_public_key}
 PresharedKey = {peer_preshared_key}
-AllowedIPs = {self.add_byte_to_adress(username)}/32\n#{username} end\n''')
+AllowedIPs = {allowed_ip.split('.')}/32,fd00:00:00::{allowed_ip[-1]}/128\n#{username} end\n''')
                 logger.info(f'[+] new peer {username} added')
         except Exception as e:
             logger.error(f'[-] {e}')
