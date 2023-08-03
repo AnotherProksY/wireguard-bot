@@ -150,7 +150,7 @@ class wireguard_config():
                 cfg.write(
                     f'''#{username} start\n[Peer]\nPublicKey = {peer_public_key}
 PresharedKey = {peer_preshared_key}
-AllowedIPs = {allowed_ip.split('.')}/32,fd00:00:00::{allowed_ip[-1]}/128\n#{username} end\n''')
+AllowedIPs = {'.'.join(allowed_ip)}/32,fd00:00:00::{allowed_ip[-1]}/128\n#{username} end\n''')
                 logger.info(f'[+] new peer {username} added')
         except Exception as e:
             logger.error(f'[-] {e}')
@@ -180,7 +180,7 @@ AllowedIPs = {allowed_ip.split('.')}/32,fd00:00:00::{allowed_ip[-1]}/128\n#{user
         """creates config for client and returns it as string
         """
         return f'''[Interface]
-Address = {self.last_peer_adress}
+Address = {self.last_peer_adress}/8,fd00:00:00::{self.last_peer_adress.split('.')[-1]}/8
 DNS = 1.1.1.1,1.0.0.1,2606:4700:4700::1111,2606:4700:4700::1001
 ListenPort = {listen_port}
 MTU = 1280

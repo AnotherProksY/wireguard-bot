@@ -150,7 +150,7 @@ async def device_selected(call: types.CallbackQuery, state=FSMContext):
 
     # delete temp files
     try:
-        remove(f'data/temp/{call.from_user.username}.conf')
+        remove(f'data/temp/{call.from_user.username}_{device}.conf')
         if device == "PHONE":
             remove(f'data/temp/{call.from_user.username}.png')
     except OSError as error:
@@ -219,7 +219,7 @@ async def cmd_support(message: types.Message):
         parse_mode='Markdown',
     )
 
-    # answer with username info @dmitnikm5 as markdown
+    # answer with username info @fast_sec_vpnsupport as markdown
     await message.answer(
         'Если у тебя все еще остались вопросы, то ты можешь написать [мне](t.me/dmitnikm5) лично',
         parse_mode='Markdown')

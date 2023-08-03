@@ -16,7 +16,7 @@ def is_admin(func):
         if message.from_user.id in config.ADMINS:
             await func(message, state)
         else:
-            await message.answer("You don't have permission to use this command.\n\Write to @dmitnikm5 for more info.")
+            await message.answer("You don't have permission to use this command.\n\Write to @fast_sec_vpnsupport for more info.")
     return wrapped
 
 
@@ -50,7 +50,7 @@ async def statistic_endtime(message: types.Message, state: FSMContext):
 @rate_limit(limit=3)
 @is_admin
 async def give_subscription_time(message: types.Message, state: FSMContext) -> types.Message:
-    # /give dmitnikm5 30
+    # /give fast_sec_vpnsupport 30
     # or /give 123456789 30
 
     if message.text.split()[1].isdigit():
